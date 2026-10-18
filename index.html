@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kick Start Visual Design</title>
+<style>
+:root {
+  --paper: #fafaf8;
+  --ink: #111;
+  --muted: #666;
+  --line: #e2e2de;
+  --tick-done: #999;
+  --tick-todo: #ddd;
+  --hatch: repeating-linear-gradient(135deg, #dededa 0 6px, #e8e8e4 6px 12px);
+  --aside: 400px;
+  --topic: 200px;
+  --pad: 40px;
+  --vh: 100vh;
+}
+@supports (height: 100svh) { :root { --vh: 100svh; } }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) var(--aside); }
+
+/* Intro */
+.intro {
+  height: var(--vh);
+  padding: 48px var(--pad);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.intro h1 {
+  margin: 0;
+  font-size: clamp(56px, 10vw, 128px);
+  font-weight: 700; letter-spacing: -0.045em; line-height: .85;
+}
+
+/* Topic: sticky name on the left, exercises on the right */
+.topic { display: grid; grid-template-columns: var(--topic) minmax(0, 1fr); border-top: 1px solid var(--ink); }
+.topic-head { position: sticky; top: 0; align-self: start; padding: var(--pad) 24px var(--pad) var(--pad); }
+.topic-n { color: var(--muted); }
+.topic-head h2 { margin: 6px 0 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; hyphens: auto; }
+
+.ex {
+  height: var(--vh);
+  padding: var(--pad) var(--pad) var(--pad) 0;
+  display: flex; flex-direction: column; gap: 20px;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 0;
+}
+.ex:last-child { border-bottom: 0; }
+.ex-info-inline { display: none; }
+
+.stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+.hero { position: relative; flex: 1; min-height: 0; width: 100%; cursor: zoom-in; }
+.hero > img, .hero > video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; object-position: left top;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .14));
+}
+.badge {
+  position: absolute; left: 8px; top: 8px;
+  font-size: 11px; padding: 2px 6px; background: var(--ink); color: var(--paper);
+}
+.empty {
+  flex: 1; min-height: 0; max-width: 560px; max-height: 420px;
+  background: var(--hatch);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: #555;
+}
+
+.thumbs { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.thumb { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.thumb img, .thumb video { display: block; height: 64px; width: auto; max-width: 140px; object-fit: cover; background: #e8e8e4; }
+.thumb[aria-pressed="true"] img, .thumb[aria-pressed="true"] video { outline: 2px solid var(--ink); outline-offset: 3px; }
+.thumb span { font-size: 11px; white-space: nowrap; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.thumb:hover img { opacity: .8; }
+/* several pages: show the thumbnail as a little stack of sheets */
+.thumb.stack img { box-shadow: 3px 3px 0 -1px var(--paper), 3px 3px 0 0 #aaa, 6px 6px 0 -1px var(--paper), 6px 6px 0 0 #aaa; }
+
+/* Page switcher under multi-page PDFs */
+.pager { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.pager button { width: 32px; height: 28px; font-size: 16px; }
+.pager button:hover:not(:disabled) { background: rgba(0, 0, 0, .06); }
+.pager button:disabled { opacity: .25; cursor: default; }
+.pager .dots { display: flex; gap: 4px; margin-left: 12px; }
+.pager .dots button { width: 18px; height: 18px; padding: 7px 4px; }
+.pager .dots button::before { content: ""; display: block; height: 4px; background: var(--tick-todo); }
+.pager .dots button[aria-current="true"]::before { background: var(--ink); }
+
+/* Booklet: all pages of a comic at once, laid out as printed spreads */
+.book {
+  flex: 1; min-height: 0;
+  display: flex; flex-wrap: wrap; align-content: flex-start; gap: 16px 24px;
+  --h: 200px;
+}
+.spread { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.spread-pages { display: flex; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .18)); }
+.page { position: relative; display: block; cursor: zoom-in; }
+.page img { display: block; height: var(--h); width: auto; }
+.pair .page:first-child::after, .pair .page:last-child::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+}
+.pair .page:first-child::after { background: linear-gradient(to left, rgba(0, 0, 0, .14), transparent 7%); }
+.pair .page:last-child::after { background: linear-gradient(to right, rgba(0, 0, 0, .10), transparent 5%); }
+.page:hover img { opacity: .9; }
+.spread figcaption { font-size: 11px; color: var(--muted); }
+
+/* Right column */
+aside {
+  position: sticky; top: 0; align-self: start;
+  height: var(--vh);
+  border-left: 1px solid var(--ink);
+  padding: 48px var(--pad);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  overflow: auto;
+}
+.lead { font-size: 22px; line-height: 1.4; text-wrap: pretty; }
+.info { display: flex; flex-direction: column; gap: 28px; min-height: 0; overflow-y: auto; margin-right: -12px; padding-right: 12px; }
+.subs button { display: grid; grid-template-columns: 40px 1fr; gap: 8px; width: 100%; padding: 5px 0; text-align: left; color: var(--tick-done); }
+.subs button[aria-current="true"] { color: var(--ink); font-weight: 700; }
+.subs button:hover { color: var(--ink); }
+.title { margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; hyphens: auto; }
+.meta { display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.learn { border-top: 1px solid var(--ink); padding-top: 12px; }
+.learn h3 { margin: 0 0 10px; font-size: 12px; font-weight: 400; color: var(--muted); }
+.learn p { margin: 0; font-size: 16px; line-height: 1.45; text-wrap: pretty; hyphens: auto; }
+.learn p + p { margin-top: .6em; }
+
+.ticks { display: flex; gap: 12px; }
+.tick-group { flex: 1; display: flex; gap: 3px; }
+.tick { flex: 1; padding: 8px 0; }
+.tick::before { content: ""; display: block; height: 4px; background: var(--tick-todo); }
+.tick.done::before { background: var(--tick-done); }
+.tick.cur::before { background: var(--ink); }
+
+/* Lightbox */
+.lb {
+  position: fixed; inset: 0; z-index: 10;
+  background: #111; color: var(--paper);
+  display: grid; grid-template-rows: auto minmax(0, 1fr);
+}
+.lb[hidden] { display: none; }
+.lb-bar { display: flex; align-items: baseline; gap: 24px; padding: 16px 24px; font-size: 14px; }
+.lb-title { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lb-count { color: #999; }
+.lb-bar a, .lb-bar button { text-decoration: none; }
+.lb-bar a:hover, .lb-bar button:hover { text-decoration: underline; }
+.lb-stage { position: relative; display: flex; align-items: center; justify-content: center; padding: 0 72px 24px; }
+.lb-stage img, .lb-stage video { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lb-stage iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+.lb-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 56px; height: 56px; font-size: 28px; color: var(--paper);
+}
+.lb-nav:hover { background: rgba(255, 255, 255, .08); }
+.lb-nav:disabled { opacity: .2; cursor: default; background: none; }
+.lb-prev { left: 8px; }
+.lb-next { right: 8px; }
+
+/* Phone & small tablet: one column, info under each exercise */
+@media (max-width: 900px) {
+  :root { --pad: 16px; }
+  .layout { display: block; }
+  aside { display: none; }
+  .intro { height: auto; min-height: 70vh; gap: 48px; padding: 32px var(--pad); }
+  .topic { display: block; }
+  .topic-head {
+    top: 0; z-index: 2; background: var(--paper);
+    padding: 12px var(--pad); border-bottom: 1px solid var(--line);
+    display: flex; gap: 12px; align-items: baseline;
+  }
+  .topic-head h2 { margin: 0; font-size: 20px; }
+  .ex { height: auto; padding: 24px var(--pad) 40px; gap: 16px; scroll-margin-top: 56px; }
+  .hero, .stage, .book { flex: none; }
+  .book { gap: 12px 16px; }
+  .hero > img, .hero > video { position: static; width: auto; max-width: 100%; height: auto; max-height: 70vh; display: block; }
+  .empty { flex: none; aspect-ratio: 4 / 3; }
+  .ex-info-inline { display: flex; flex-direction: column; gap: 16px; }
+  .ex-info-inline .title { font-size: 28px; }
+  .learn p { font-size: 16px; }
+  .lb-stage { padding: 0 0 16px; }
+  .lb-nav { top: auto; bottom: 8px; transform: none; background: rgba(17, 17, 17, .7); }
+  .lb-bar { gap: 16px; padding: 12px 16px; flex-wrap: wrap; }
+  .lb-fs { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <main id="main"></main>
+  <aside id="aside" aria-live="polite"></aside>
+</div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Vollansicht">
+  <div class="lb-bar">
+    <div class="lb-title" id="lb-title"></div>
+    <div class="lb-count" id="lb-count"></div>
+    <a id="lb-open" target="_blank" rel="noopener">Original ↗</a>
+    <button class="lb-fs" id="lb-fs" type="button">Vollbild</button>
+    <button id="lb-close" type="button">Schliessen ✕</button>
+  </div>
+  <div class="lb-stage" id="lb-stage"></div>
+</div>
+
+<!-- Generated by build.py from resources/ — don't edit by hand. -->
+<script type="application/json" id="files">
+[{"dir": "resources/01_Farbe", "title": "Farbe", "date": "24.09.2026", "learn": "Das Experimentieren mit Farben hat mir viel Spass gemacht.\nGelernt habe ich vor allem zwei Dinge: Farben mit demselben Helligkeitswert in InDesign wirken trotzdem nicht gleich hell, weil die wahrgenommene Helligkeit auch vom Farbton abhängt. Und dieselbe Farbe wirkt je nach Hintergrund ganz anders (Simultankontrast). Besonders stark ist dieser Effekt bei Komplementärfarben.", "exercises": [{"dir": "resources/01_Farbe/01_Farbkontrast", "files": [{"src": "resources/01_Farbe/01_Farbkontrast/final.png", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "resources/01_Farbe/01_Farbkontrast/final.png", "size": [792, 612]}]}], "title": "Farbkontrast", "date": "", "learn": ""}, {"dir": "resources/01_Farbe/02_Helligkeitskontrast", "files": [{"src": "resources/01_Farbe/02_Helligkeitskontrast/final.png", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "resources/01_Farbe/02_Helligkeitskontrast/final.png", "size": [792, 612]}]}], "title": "Helligkeitskontrast", "date": "", "learn": ""}, {"dir": "resources/01_Farbe/03_Farbwahrnehmung", "files": [{"src": "resources/01_Farbe/03_Farbwahrnehmung/final.png", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "resources/01_Farbe/03_Farbwahrnehmung/final.png", "size": [792, 612]}]}], "title": "Farbwahrnehmung", "date": "", "learn": ""}]}, {"dir": "resources/02_Figur_und_Grund", "title": "Figur und Grund", "exercises": [{"dir": "resources/02_Figur_und_Grund", "files": [{"src": "resources/02_Figur_und_Grund/v1.png", "kind": "img", "ver": "v1", "label": "V1", "pages": [{"src": "resources/02_Figur_und_Grund/v1.png", "size": [567, 567]}]}, {"src": "resources/02_Figur_und_Grund/v2.png", "kind": "img", "ver": "v2", "label": "V2", "pages": [{"src": "resources/02_Figur_und_Grund/v2.png", "size": [567, 567]}]}, {"src": "resources/02_Figur_und_Grund/v3.png", "kind": "img", "ver": "v3", "label": "V3", "pages": [{"src": "resources/02_Figur_und_Grund/v3.png", "size": [567, 567]}]}, {"src": "resources/02_Figur_und_Grund/v4.png", "kind": "img", "ver": "v4", "label": "V4", "pages": [{"src": "resources/02_Figur_und_Grund/v4.png", "size": [567, 567]}]}, {"src": "resources/02_Figur_und_Grund/v5.png", "kind": "img", "ver": "v5", "label": "V5", "pages": [{"src": "resources/02_Figur_und_Grund/v5.png", "size": [567, 567]}]}], "title": "Figur und Grund", "date": "24.09.2026", "learn": "Es war spannend, verschiedene Varianten auszuprobieren, aber schwierig, den Punkt zu erreichen, an dem Figur und Grund kippen, an dem also nicht mehr klar ist, was vorne und was hinten liegt. Ausserdem macht es meiner Meinung nach einen Unterschied, ob das Bild auf weissem oder schwarzem Untergrund gezeigt wird.\nAm stärksten finde ich V1 und V5. V1 basiert auf einem Q, das man nicht mehr erkennt. V5 ist aus einem a entstanden und je nach Untergrund wirkt die weisse Fläche mal als Figur, mal als Grund."}]}, {"dir": "resources/03_Schriftvergleich", "title": "Schriftvergleich", "exercises": [{"dir": "resources/03_Schriftvergleich", "files": [{"src": "resources/03_Schriftvergleich/schriftvergleich-centaur-vs-bembo.pdf", "kind": "pdf", "ver": "schriftvergleich-centaur-vs-bembo", "label": "Schriftvergleich centaur vs bembo", "pages": [{"src": "previews/03_Schriftvergleich/schriftvergleich-centaur-vs-bembo.pdf.p1.jpg", "size": [2399, 1697]}]}], "title": "Schriftvergleich", "date": "25.09.2026", "learn": "Hier habe ich die Kontraste aus den vorherigen Übungen angewendet. Wichtiges habe ich mit einer Auszeichnungsfarbe hervorgehoben, die bewusst heraussticht. Für alle Erläuterungen habe ich eine dritte Schrift verwendet, damit beide Seiten gleich gewichtet bleiben und sich die Schriftmuster klar vom erklärenden Text abheben.\nGelernt habe ich, dass sich selbst zwei so ähnliche Renaissance-Antiquas wie Centaur und Bembo deutlich unterscheiden. Mich beeindruckt, wie viel Variation in so kleinen Details steckt."}]}, {"dir": "resources/04_Schriftsatz", "title": "Schriftsatz", "date": "25.09.2026", "learn": "Diese Aufgabe fand ich schwierig, weil mir das nötige Know-how in InDesign noch fehlte und ich es mir erst erarbeiten musste. Dazu kam, dass wir sie im Selbststudium und ohne Feedback gelöst haben.\nSehr geholfen hat mir, bewusst Extreme auszuprobieren. Daran sieht man am schnellsten, wie Schriftwahl, Zeilenabstand und Laufweite den Grauwert und die Lesbarkeit eines Textes verändern.\nBeim Buchstabenabstand habe ich gelernt, dass man optisch und nicht mechanisch ausgleichen muss: Buchstaben mit geraden Stämmen wie N brauchen mehr Abstand als Buchstaben, die an den Seiten schon viel Weissraum mitbringen, wie A.\nIn den Aufgaben 4.2 und 4.3 habe ich die Schrift Euphemia UCAS Regular verwendet.", "exercises": [{"dir": "resources/04_Schriftsatz/01_Blocksatz", "files": [{"src": "resources/04_Schriftsatz/01_Blocksatz/Experimente.pdf", "kind": "pdf", "ver": "experimente", "label": "Experimente", "pages": [{"src": "previews/04_Schriftsatz/01_Blocksatz/Experimente.pdf.p1.jpg", "size": [2400, 1854]}, {"src": "previews/04_Schriftsatz/01_Blocksatz/Experimente.pdf.p2.jpg", "size": [2400, 1854]}, {"src": "previews/04_Schriftsatz/01_Blocksatz/Experimente.pdf.p3.jpg", "size": [2400, 1854]}]}, {"src": "resources/04_Schriftsatz/01_Blocksatz/Optimiert.pdf", "kind": "pdf", "ver": "optimiert", "label": "Optimiert", "pages": [{"src": "previews/04_Schriftsatz/01_Blocksatz/Optimiert.pdf.p1.jpg", "size": [2400, 1854]}, {"src": "previews/04_Schriftsatz/01_Blocksatz/Optimiert.pdf.p2.jpg", "size": [2400, 1854]}]}], "title": "Blocksatz", "date": "", "learn": ""}, {"dir": "resources/04_Schriftsatz/02_Buchstaben_Abstand", "files": [{"src": "resources/04_Schriftsatz/02_Buchstaben_Abstand/schriftsatz-buchstaben-abstand.pdf", "kind": "pdf", "ver": "schriftsatz-buchstaben-abstand", "label": "Schriftsatz buchstaben abstand", "pages": [{"src": "previews/04_Schriftsatz/02_Buchstaben_Abstand/schriftsatz-buchstaben-abstand.pdf.p1.jpg", "size": [2400, 1854]}]}], "title": "Buchstaben Abstand", "date": "", "learn": ""}, {"dir": "resources/04_Schriftsatz/03_Asymmetrischer_Flattersatz", "files": [{"src": "resources/04_Schriftsatz/03_Asymmetrischer_Flattersatz/schriftsatz-flattersatz.pdf", "kind": "pdf", "ver": "schriftsatz-flattersatz", "label": "Schriftsatz flattersatz", "pages": [{"src": "previews/04_Schriftsatz/03_Asymmetrischer_Flattersatz/schriftsatz-flattersatz.pdf.p1.jpg", "size": [2400, 1854]}]}], "title": "Asymmetrischer Flattersatz", "date": "", "learn": ""}]}, {"dir": "resources/05_Komposition_mit_Kreisen", "title": "Komposition mit Kreisen", "exercises": [{"dir": "resources/05_Komposition_mit_Kreisen", "files": [{"src": "resources/05_Komposition_mit_Kreisen/v1.heic", "kind": "img", "ver": "v1", "label": "V1", "pages": [{"src": "previews/05_Komposition_mit_Kreisen/v1.heic.jpg", "size": [1528, 2400]}]}, {"src": "resources/05_Komposition_mit_Kreisen/v2.heic", "kind": "img", "ver": "v2", "label": "V2", "pages": [{"src": "previews/05_Komposition_mit_Kreisen/v2.heic.jpg", "size": [1600, 2400]}]}, {"src": "resources/05_Komposition_mit_Kreisen/v3.heic", "kind": "img", "ver": "v3", "label": "V3", "pages": [{"src": "previews/05_Komposition_mit_Kreisen/v3.heic.jpg", "size": [2400, 1917]}]}, {"src": "resources/05_Komposition_mit_Kreisen/final.heic", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "previews/05_Komposition_mit_Kreisen/final.heic.jpg", "size": [2400, 1900]}]}], "title": "Komposition mit Kreisen", "date": "01.10.2026", "learn": "Viele meiner ersten Kompositionen wirkten zu langweilig oder zu einfach, oder sie erzielten nicht die Wirkung, die ich wollte.\nIn der finalen Version stelle ich das Kontrastpaar schnell – langsam dar. Die Kreise im linken Bild wirken dynamisch: Man kann sie als schwere Sternschnuppe lesen, die vom Himmel fällt, oder als leichte Seifenblasen, die eilig aufsteigen. Im rechten Bild dagegen scheinen die Kreise fast still zu schweben, die Komposition wirkt ruhig und statisch.\nEin anderes Kontrastpaar wie laut – leise wäre auch möglich gewesen, dafür ist mir aber keine überzeugende Umsetzung eingefallen."}]}, {"dir": "resources/06_Bildhierarchie", "title": "Bildhierarchie", "date": "01.10.2026 – 08.10.2026", "learn": "Mit meinem Vornamen habe ich mich sehr schwer getan, vor allem weil er nur aus den Buchstaben A, N, L und E besteht. Es war schwierig, eine Anordnung zu finden, die natürlich und zufällig wirkt, sowie den Übergang von «Anna» zu «Lea» zu gestalten. Das Feedback war, «Lea» visuell klar von «Anna» zu trennen, auch wenn es weniger ästhetisch aussieht. Aber auch damit hatte ich Mühe, denn je stärker die Trennung, desto schwieriger wurde es, «Anna» so anzuordnen, dass die Leserichtung nicht automatisch den Namen ergibt.\nAus diesen Gründen habe ich mich zusätzlich an meinem Nachnamen versucht und dabei mit Reihenfolge, Abständen, Grössenkontrast und Weissraum gespielt. Mit diesem Ergebnis bin ich deutlich zufriedener.", "exercises": [{"dir": "resources/06_Bildhierarchie/01_Vorname", "files": [{"src": "resources/06_Bildhierarchie/01_Vorname/v1.png", "kind": "img", "ver": "v1", "label": "V1", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v1.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v2.png", "kind": "img", "ver": "v2", "label": "V2", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v2.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v3.png", "kind": "img", "ver": "v3", "label": "V3", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v3.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v4.png", "kind": "img", "ver": "v4", "label": "V4", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v4.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v5.png", "kind": "img", "ver": "v5", "label": "V5", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v5.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v6.heic", "kind": "img", "ver": "v6", "label": "V6", "pages": [{"src": "previews/06_Bildhierarchie/01_Vorname/v6.heic.jpg", "size": [2400, 1800]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v7.png", "kind": "img", "ver": "v7", "label": "V7", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v7.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v8.png", "kind": "img", "ver": "v8", "label": "V8", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v8.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v9.png", "kind": "img", "ver": "v9", "label": "V9", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v9.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v10.png", "kind": "img", "ver": "v10", "label": "V10", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v10.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/v11.png", "kind": "img", "ver": "v11", "label": "V11", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/v11.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/01_Vorname/final.png", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "resources/06_Bildhierarchie/01_Vorname/final.png", "size": [842, 1191]}]}], "title": "Vorname", "date": "", "learn": ""}, {"dir": "resources/06_Bildhierarchie/02_Nachname", "files": [{"src": "resources/06_Bildhierarchie/02_Nachname/v1.heic", "kind": "img", "ver": "v1", "label": "V1", "pages": [{"src": "previews/06_Bildhierarchie/02_Nachname/v1.heic.jpg", "size": [2400, 1800]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/v2.png", "kind": "img", "ver": "v2", "label": "V2", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/v2.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/v3.png", "kind": "img", "ver": "v3", "label": "V3", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/v3.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/v4.png", "kind": "img", "ver": "v4", "label": "V4", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/v4.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/v5.png", "kind": "img", "ver": "v5", "label": "V5", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/v5.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/v6.png", "kind": "img", "ver": "v6", "label": "V6", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/v6.png", "size": [842, 1191]}]}, {"src": "resources/06_Bildhierarchie/02_Nachname/final.png", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "resources/06_Bildhierarchie/02_Nachname/final.png", "size": [842, 1191]}]}], "title": "Nachname", "date": "", "learn": ""}]}, {"dir": "resources/07_Plakatvergleich", "title": "Plakatvergleich", "date": "08.10.2026", "learn": "Das Weltformat-Festival hat mir sehr gefallen. Es war spannend, so viele Plakate nebeneinander zu sehen, sie zu vergleichen und zu entdecken, was gestalterisch alles möglich ist.\nDurch den Plakatvergleich habe ich mich vertieft mit einzelnen Arbeiten auseinandergesetzt und Details entdeckt, die mir sonst entgangen wären. Schade war, dass wir wenig Zeit hatten und die Fachbegriffe nur knapp erklärt wurden.\nMitgenommen habe ich vor allem die drei Ebenen der Zeichenanalyse: Syntaktik (Aufbau und Gestaltung), Semantik (Bedeutung) und Pragmatik (Wirkung auf die Betrachtenden).", "exercises": [{"dir": "resources/07_Plakatvergleich/Eindrücke", "files": [{"src": "resources/07_Plakatvergleich/Eindrücke/buch-1.heic", "kind": "img", "ver": "buch-1", "label": "Buch 1", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/buch-1.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/buch-2.heic", "kind": "img", "ver": "buch-2", "label": "Buch 2", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/buch-2.heic.jpg", "size": [2400, 1800]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/buch-3.heic", "kind": "img", "ver": "buch-3", "label": "Buch 3", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/buch-3.heic.jpg", "size": [2400, 1800]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-1.heic", "kind": "img", "ver": "plakat-1", "label": "Plakat 1", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-1.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-2.heic", "kind": "img", "ver": "plakat-2", "label": "Plakat 2", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-2.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-3.heic", "kind": "img", "ver": "plakat-3", "label": "Plakat 3", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-3.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-4.heic", "kind": "img", "ver": "plakat-4", "label": "Plakat 4", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-4.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-5.heic", "kind": "img", "ver": "plakat-5", "label": "Plakat 5", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-5.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/07_Plakatvergleich/Eindrücke/plakat-6.heic", "kind": "img", "ver": "plakat-6", "label": "Plakat 6", "pages": [{"src": "previews/07_Plakatvergleich/Eindrücke/plakat-6.heic.jpg", "size": [1800, 2400]}]}], "title": "Eindrücke", "date": "", "learn": ""}, {"dir": "resources/07_Plakatvergleich/Plakatvergleich", "files": [{"src": "resources/07_Plakatvergleich/Plakatvergleich/plakatvergleich.pdf", "kind": "pdf", "ver": "plakatvergleich", "label": "Plakatvergleich", "pages": [{"src": "previews/07_Plakatvergleich/Plakatvergleich/plakatvergleich.pdf.p1.jpg", "size": [2400, 1696]}, {"src": "previews/07_Plakatvergleich/Plakatvergleich/plakatvergleich.pdf.p2.jpg", "size": [1696, 2400]}, {"src": "previews/07_Plakatvergleich/Plakatvergleich/plakatvergleich.pdf.p3.jpg", "size": [1696, 2400]}, {"src": "previews/07_Plakatvergleich/Plakatvergleich/plakatvergleich.pdf.p4.jpg", "size": [1696, 2400]}]}], "title": "Plakatvergleich", "date": "", "learn": ""}]}, {"dir": "resources/08_Zwischen_Zwei_Bildern", "title": "Zwischen Zwei Bildern", "exercises": [{"dir": "resources/08_Zwischen_Zwei_Bildern", "files": [{"src": "resources/08_Zwischen_Zwei_Bildern/final.heic", "kind": "img", "ver": "final", "label": "Final", "pages": [{"src": "previews/08_Zwischen_Zwei_Bildern/final.heic.jpg", "size": [1835, 2400]}]}], "title": "Zwischen Zwei Bildern", "date": "09.10.2026", "learn": "Diese Aufgabe hat mir viel Spass gemacht. Zwei Bilder so zu kombinieren, dass zwischen ihnen eine Geschichte entsteht, die man im Kopf selbst ergänzt, fiel mir relativ leicht. Allerdings habe ich auch eine Auswahl an Bildern zusammengesucht, die ausgesprochen gut zu einander passt."}]}, {"dir": "resources/09_Dramaturgie", "title": "Dramaturgie", "exercises": [{"dir": "resources/09_Dramaturgie", "files": [{"src": "resources/09_Dramaturgie/v1_Seite1.HEIC", "kind": "img", "ver": "v1", "label": "V1 · Seite 1", "pages": [{"src": "previews/09_Dramaturgie/v1_Seite1.HEIC.jpg", "size": [2400, 1800]}], "seite": [1, 1]}, {"src": "resources/09_Dramaturgie/v1_Seite2-3.heic", "kind": "img", "ver": "v1", "label": "V1 · Seite 2–3", "pages": [{"src": "previews/09_Dramaturgie/v1_Seite2-3.heic.jpg", "size": [2400, 1800]}], "seite": [2, 3]}, {"src": "resources/09_Dramaturgie/v1_Seite4-5.heic", "kind": "img", "ver": "v1", "label": "V1 · Seite 4–5", "pages": [{"src": "previews/09_Dramaturgie/v1_Seite4-5.heic.jpg", "size": [2400, 1800]}], "seite": [4, 5]}, {"src": "resources/09_Dramaturgie/v1_Seite6-7.heic", "kind": "img", "ver": "v1", "label": "V1 · Seite 6–7", "pages": [{"src": "previews/09_Dramaturgie/v1_Seite6-7.heic.jpg", "size": [2400, 1800]}], "seite": [6, 7]}, {"src": "resources/09_Dramaturgie/v1_Seite8.HEIC", "kind": "img", "ver": "v1", "label": "V1 · Seite 8", "pages": [{"src": "previews/09_Dramaturgie/v1_Seite8.HEIC.jpg", "size": [2400, 1800]}], "seite": [8, 8]}, {"src": "resources/09_Dramaturgie/final_Seite1.png", "kind": "img", "ver": "final", "label": "Final · Seite 1", "pages": [{"src": "resources/09_Dramaturgie/final_Seite1.png", "size": [460, 648]}], "seite": [1, 1]}, {"src": "resources/09_Dramaturgie/final_Seite2.png", "kind": "img", "ver": "final", "label": "Final · Seite 2", "pages": [{"src": "resources/09_Dramaturgie/final_Seite2.png", "size": [460, 648]}], "seite": [2, 2]}, {"src": "resources/09_Dramaturgie/final_Seite3.png", "kind": "img", "ver": "final", "label": "Final · Seite 3", "pages": [{"src": "resources/09_Dramaturgie/final_Seite3.png", "size": [460, 648]}], "seite": [3, 3]}, {"src": "resources/09_Dramaturgie/final_Seite4.png", "kind": "img", "ver": "final", "label": "Final · Seite 4", "pages": [{"src": "resources/09_Dramaturgie/final_Seite4.png", "size": [460, 648]}], "seite": [4, 4]}, {"src": "resources/09_Dramaturgie/final_Seite5.png", "kind": "img", "ver": "final", "label": "Final · Seite 5", "pages": [{"src": "resources/09_Dramaturgie/final_Seite5.png", "size": [460, 648]}], "seite": [5, 5]}, {"src": "resources/09_Dramaturgie/final_Seite6.png", "kind": "img", "ver": "final", "label": "Final · Seite 6", "pages": [{"src": "resources/09_Dramaturgie/final_Seite6.png", "size": [460, 648]}], "seite": [6, 6]}, {"src": "resources/09_Dramaturgie/final_Seite7.png", "kind": "img", "ver": "final", "label": "Final · Seite 7", "pages": [{"src": "resources/09_Dramaturgie/final_Seite7.png", "size": [460, 648]}], "seite": [7, 7]}, {"src": "resources/09_Dramaturgie/final_Seite8.png", "kind": "img", "ver": "final", "label": "Final · Seite 8", "pages": [{"src": "resources/09_Dramaturgie/final_Seite8.png", "size": [460, 648]}], "seite": [8, 8]}], "title": "Dramaturgie", "date": "09.10.2026", "learn": "Die Kritik an V1 war, dass die Übergänge zwischen den Seiten zu abrupt waren. Zum Beispiel ergibt es keinen Sinn, dass aus fünf blauen Dreiecken plötzlich zwei werden oder dass das pinke Dreieck danach unvermittelt allein mit einer neuen Form dasteht.\nSo weit hatte ich beim Gestalten nicht gedacht. Mir ging es vor allem darum, das Thema Ausgrenzung mit einem Happy End zu erzählen. Dabei habe ich vieles mitgedacht, das für die Lesenden gar nicht sichtbar war.\nUmso dankbarer war ich für das Feedback. In der zweiten Version habe ich auf nachvollziehbare Übergänge von Seite zu Seite geachtet, und ich finde, das ist mir gelungen."}]}, {"dir": "resources/10_Blickführung_im_Layout", "title": "Blickführung im Layout", "exercises": [{"dir": "resources/10_Blickführung_im_Layout", "files": [{"src": "resources/10_Blickführung_im_Layout/v1.pdf", "kind": "pdf", "ver": "v1", "label": "V1", "pages": [{"src": "previews/10_Blickführung_im_Layout/v1.pdf.p1.jpg", "size": [2399, 1697]}, {"src": "previews/10_Blickführung_im_Layout/v1.pdf.p2.jpg", "size": [2399, 1697]}]}, {"src": "resources/10_Blickführung_im_Layout/v2.pdf", "kind": "pdf", "ver": "v2", "label": "V2", "pages": [{"src": "previews/10_Blickführung_im_Layout/v2.pdf.p1.jpg", "size": [2399, 1697]}, {"src": "previews/10_Blickführung_im_Layout/v2.pdf.p2.jpg", "size": [2399, 1697]}]}, {"src": "resources/10_Blickführung_im_Layout/final.pdf", "kind": "pdf", "ver": "final", "label": "Final", "pages": [{"src": "previews/10_Blickführung_im_Layout/final.pdf.p1.jpg", "size": [2399, 1697]}, {"src": "previews/10_Blickführung_im_Layout/final.pdf.p2.jpg", "size": [2399, 1697]}, {"src": "previews/10_Blickführung_im_Layout/final.pdf.p3.jpg", "size": [2399, 1697]}, {"src": "previews/10_Blickführung_im_Layout/final.pdf.p4.jpg", "size": [2399, 1697]}]}], "title": "Blickführung im Layout", "date": "15.10.2026 – 16.10.2026", "learn": "Ein Magazin zu gestalten war spannend, aber auch herausfordernd, weil wir keine Vorlage und sehr viele Freiheiten hatten. Schwierig war ausserdem, die ganze Textmenge unterzubringen.\nDas Cover hat mir von Anfang an gefallen. Die Herausforderung war, den Rest des Hefts daran anzuknüpfen.\nIn V1 habe ich das schwarze Element vom Cover wieder aufgenommen, das wirkte aber zu schwer.\nIn V2 habe ich das Layout ruhiger gestaltet und mehr Weissraum gelassen. Ausserdem hatte ich einen Zwischentitel (\"Familienglück\") gestaltet. Laut Feedback setzt man diese aber eher für eigenständige Nebengeschichten ein.\nIn der finalen Version habe ich ihn deshalb durch grossformatige Bilder ersetzt. Bild- und Textseiten wechseln sich ab, mal links–rechts, mal rechts–links, was einen Rhythmus erzeugt. Auf jeder Doppelseite zeigt die eine Seite eine Person, die andere eher einen Gegenstand, und zwischen den Bildern entstehen immer wieder Komplementärkontraste (Orange/Rot – Grün). Personen und Tiere blicken ausserdem stets nach innen."}]}, {"dir": "resources/11_Zeichnungsübungen", "title": "Zeichnungsübungen", "date": "", "learn": "", "exercises": [{"dir": "resources/11_Zeichnungsübungen/01_Hände", "files": [], "title": "Hände", "date": "25.09.2026", "learn": "In einer kurzen, spontanen Übung haben wir Hände gezeichnet und sie dabei auf einfache geometrische Grundformen reduziert. Rückblickend hätte ich mehr ausprobieren sollen; schneller skizzieren und mich von der Intuition leiten lassen. Weil ich mich stark auf Präzision konzentriert habe, sind nur zwei Hände entstanden."}, {"dir": "resources/11_Zeichnungsübungen/02_Perspektiven", "files": [{"src": "resources/11_Zeichnungsübungen/02_Perspektiven/v1.heic", "kind": "img", "ver": "v1", "label": "V1", "pages": [{"src": "previews/11_Zeichnungsübungen/02_Perspektiven/v1.heic.jpg", "size": [1800, 2400]}]}, {"src": "resources/11_Zeichnungsübungen/02_Perspektiven/v2.heic", "kind": "img", "ver": "v2", "label": "V2", "pages": [{"src": "previews/11_Zeichnungsübungen/02_Perspektiven/v2.heic.jpg", "size": [2400, 1800]}]}], "title": "Perspektiven", "date": "02.10.2026", "learn": "Perspektivisches Zeichnen kannte ich schon aus der Schule, und es hat Spass gemacht, das wieder zu üben. Diesmal habe ich bewusst weniger Zeit in Details gesteckt und dafür mehrere Skizzen gemacht. Ausserdem habe ich einmal mit einem und einmal mit zwei Fluchtpunkten gearbeitet, also in Ein- und Zweipunktperspektive."}, {"dir": "resources/11_Zeichnungsübungen/03_Köpfe", "files": [{"src": "resources/11_Zeichnungsübungen/03_Köpfe/IMG_4727.heic", "kind": "img", "ver": "img_4727", "label": "IMG 4727", "pages": [{"src": "previews/11_Zeichnungsübungen/03_Köpfe/IMG_4727.heic.jpg", "size": [2400, 1746]}]}], "title": "Köpfe", "date": "09.10.2026", "learn": "Köpfe zu zeichnen war bisher die schwierigste Zeichenübung. Augen, Nase, Ohren und Mund sitzen zwar ungefähr an der richtigen Stelle, aber das Gesicht wirkt zu rund, und auch die Proportionen stimmen womöglich noch nicht ganz."}]}, {"dir": "resources/12_Vortrag_Designer", "title": "Vortrag Designer", "exercises": [{"dir": "resources/12_Vortrag_Designer", "files": [], "title": "Vortrag Designer", "date": "", "learn": ""}]}]
+</script>
+
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('files').textContent);
+  const SITE = { author: 'Anna-Lea Jakob', title: 'Kick Start\nVisual\nDesign' };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const url = p => p.split('/').map(encodeURIComponent).join('/');
+  const WORDS = ['null', 'ein', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf',
+    'dreizehn', 'vierzehn', 'fünfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn', 'zwanzig'];
+  const word = n => WORDS[n] ?? String(n);
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const count = (n, one, many) => n === 1 ? '1 ' + one : n + ' ' + many;
+  const mobile = matchMedia('(max-width: 900px)');
+
+  // ---- Model -------------------------------------------------------------
+  // Group a version's "Seite…" files into printed spreads: cover alone, then 2–3, 4–5 …
+  function spreads(files) {
+    const out = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i], [a, b] = f.seite || [0, 0], next = files[i + 1];
+      if (a === b && a > 1 && a % 2 === 0 && next && next.seite && next.seite[0] === a + 1 && next.seite[0] === next.seite[1]) {
+        out.push([f, next]); i++;
+      } else out.push([f]);
+    }
+    return out;
+  }
+
+  const flat = [];
+  const topics = DATA.map((t, ti) => {
+    const topic = { ti, n: String(ti + 1).padStart(2, '0'), title: t.title, subs: [] };
+    t.exercises.forEach((e, si) => {
+      const fin = e.files.findIndex(f => f.ver === 'final');
+      // every page of every file, in order — what the lightbox steps through
+      const items = [];
+      e.files.forEach((f, i) => f.pages.forEach((p, j) => items.push({ f, i, j,
+        label: f.label + (f.pages.length > 1 ? ` · Seite ${j + 1} / ${f.pages.length}` : '') })));
+      // the topic's notizen.txt stands in for exercises without their own
+      const ex = { ...e, topic, items, fi: flat.length, num: (ti + 1) + '.' + (si + 1), id: 'ex-' + (ti + 1) + '-' + (si + 1),
+        date: e.date || t.date, learn: e.learn || t.learn, inlineLearn: !!e.learn || si === 0,
+        hero: fin >= 0 ? fin : e.files.length - 1, page: 0 };
+      // booklet: some version consists of several "Seite…" files
+      const vers = [];
+      e.files.forEach(f => { let v = vers.find(v => v.ver === f.ver); if (!v) vers.push(v = { ver: f.ver, label: f.label.split(' · ')[0], files: [] }); v.files.push(f); });
+      if (vers.some(v => v.files.filter(f => f.seite).length > 1)) {
+        ex.book = vers.map(v => ({ ...v, spreads: spreads(v.files), pages: Math.max(...v.files.map(f => f.seite ? f.seite[1] : 1)) }));
+        const k = ex.book.findIndex(v => v.ver === 'final');
+        ex.bookV = k >= 0 ? k : ex.book.length - 1;
+      }
+      topic.subs.push(ex);
+      flat.push(ex);
+    });
+    return topic;
+  });
+
+  // ---- Render ------------------------------------------------------------
+  const img = (src, alt, attrs = '') => `<img src="${url(src)}" alt="${esc(alt)}" ${attrs}>`;
+  const media = (f, p, attrs = '') => f.kind === 'video'
+    ? `<video src="${url(f.src)}#t=0.1" muted playsinline preload="metadata" ${attrs}></video>`
+    : img(p.src, f.label, attrs);
+
+  const infoHTML = (ex, inline) => `
+    <h3 class="title">${esc(ex.title)}</h3>
+    ${ex.date ? `<dl class="meta"><dt>Datum</dt><dd>${esc(ex.date)}</dd></dl>` : ''}
+    ${ex.learn && (!inline || ex.inlineLearn) ? `<div class="learn"><h3>What I’ve learnt</h3>
+      ${ex.learn.split('\n').map(l => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`;
+
+  const pdfNote = f => f.kind !== 'pdf' ? '' : f.pages.length > 1 ? `PDF · ${f.pages.length} Seiten` : 'PDF';
+
+  function stageHTML(ex) {
+    const f = ex.files[ex.hero];
+    if (!f) return '<div class="stage"><div class="empty">Noch keine Dateien</div></div>';
+    const n = f.pages.length, p = ex.page;
+    return `<div class="stage">
+      <button class="hero" type="button" data-fi="${ex.fi}" aria-label="${esc(ex.title)}, ${esc(f.label)}${n > 1 ? `, Seite ${p + 1} von ${n}` : ''} – im Vollbild ansehen">
+        ${media(f, f.pages[p])}${f.kind === 'pdf' ? `<span class="badge">${pdfNote(f)}</span>` : ''}</button>
+      ${n < 2 ? '' : `<div class="pager" data-fi="${ex.fi}">
+        <button type="button" data-step="-1" aria-label="Vorherige Seite" ${p === 0 ? 'disabled' : ''}>←</button>
+        <span>Seite ${p + 1} / ${n}</span>
+        <button type="button" data-step="1" aria-label="Nächste Seite" ${p === n - 1 ? 'disabled' : ''}>→</button>
+        <span class="dots">${f.pages.map((_, j) => `<button type="button" data-page="${j}" aria-label="Seite ${j + 1}" aria-current="${j === p}"></button>`).join('')}</span>
+      </div>`}
+    </div>`;
+  }
+
+  const thumbsHTML = ex => ex.files.length < 2 ? '' : `<div class="thumbs">${ex.files.map((f, i) => `
+    <button class="thumb${f.pages.length > 1 ? ' stack' : ''}" type="button" data-fi="${ex.fi}" data-i="${i}" aria-pressed="${i === ex.hero}" title="${esc(f.label)}">
+      ${media(f, f.pages[0], 'loading="lazy"')}<span>${esc(f.label)}${f.kind === 'pdf' ? ' · ' + pdfNote(f) : ''}</span></button>`).join('')}</div>`;
+
+  function bookHTML(ex) {
+    const v = ex.book[ex.bookV];
+    return `<div class="book" data-fi="${ex.fi}" aria-label="${esc(v.label)}: alle Seiten">${v.spreads.map(s => {
+      const nums = s.flatMap(f => f.seite || []);
+      const cap = nums.length ? 'Seite ' + (Math.min(...nums) === Math.max(...nums) ? nums[0] : Math.min(...nums) + '–' + Math.max(...nums)) : s[0].label;
+      return `<figure class="spread${s.length > 1 ? ' pair' : ''}"><div class="spread-pages">${s.map(f =>
+        `<button class="page" type="button" data-fi="${ex.fi}" data-i="${ex.files.indexOf(f)}" aria-label="${esc(f.label)} – im Vollbild ansehen">${img(f.pages[0].src, f.label, 'loading="lazy"')}</button>`).join('')}
+        </div><figcaption>${esc(cap)}</figcaption></figure>`;
+    }).join('')}</div>`;
+  }
+
+  const bookThumbsHTML = ex => `<div class="thumbs">${ex.book.map((v, k) => `
+    <button class="thumb stack" type="button" data-fi="${ex.fi}" data-v="${k}" aria-pressed="${k === ex.bookV}">
+      ${img(v.files[0].pages[0].src, v.label, 'loading="lazy"')}<span>${esc(v.label)} · ${v.pages} Seiten</span></button>`).join('')}</div>`;
+
+  const nEx = flat.length;
+  $('main').innerHTML = `
+    <section class="intro">
+      <div>${esc(SITE.author)}</div>
+      <h1>${esc(SITE.title || 'Kick Start Visual Design').replace(/\n/g, '<br>')}</h1>
+      <div>↓ ${count(topics.length, 'Thema', 'Themen')}, ${count(nEx, 'Übung', 'Übungen')}</div>
+    </section>
+    ${topics.map(t => `
+    <section class="topic" aria-labelledby="topic-${t.n}">
+      <div class="topic-head"><div class="topic-n">${t.n}</div><h2 id="topic-${t.n}">${esc(t.title)}</h2></div>
+      <div>${t.subs.map(ex => `
+        <article class="ex" id="${ex.id}">
+          <div>${ex.num}</div>
+          <div class="ex-info-inline">${infoHTML(ex, true)}</div>
+          ${ex.book ? bookHTML(ex) + bookThumbsHTML(ex) : stageHTML(ex) + thumbsHTML(ex)}
+        </article>`).join('')}
+      </div>
+    </section>`).join('')}`;
+
+  const intro = SITE.intro || `${cap(word(topics.length))} Themen mit insgesamt ${word(nEx)} Übungen, jeweils mit allen Versionen und dem, was ich daraus gelernt habe.`;
+  const ticksHTML = cur => `<div class="ticks">${topics.map(t => `<div class="tick-group">${t.subs.map(ex =>
+    `<button class="tick ${ex.fi === cur ? 'cur' : ex.fi < cur ? 'done' : ''}" type="button" data-go="${ex.fi}" title="${ex.num} ${esc(ex.title)}" aria-label="Zu ${ex.num} ${esc(ex.title)}"></button>`).join('')}</div>`).join('')}</div>`;
+
+  let shown = null;
+  function renderAside(cur) {
+    if (cur === shown) return;
+    shown = cur;
+    const ex = flat[cur];
+    $('aside').innerHTML = `
+      <div>Dokumentation</div>
+      ${!ex ? `<div class="lead">${esc(intro)}</div>` : `
+      <div class="info">
+        <div class="subs">${ex.topic.subs.map(s => `<button type="button" data-go="${s.fi}" aria-current="${s === ex}"><span>${s.num}</span><span>${esc(s.title)}</span></button>`).join('')}</div>
+        ${infoHTML(ex)}
+      </div>`}
+      ${ticksHTML(cur)}`;
+  }
+
+  // ---- Booklet sizing: largest page height at which all spreads fit -------
+  function fitBook(ex) {
+    const el = exEls[ex.fi].querySelector('.book');
+    const ars = ex.book[ex.bookV].spreads.map(s => s.reduce((a, f) => a + f.pages[0].size[0] / f.pages[0].size[1], 0));
+    const W = el.clientWidth, H = el.clientHeight, GX = 24, GY = 16, CAP = 22, maxA = Math.max(...ars);
+    let best;
+    if (mobile.matches) best = Math.min(W / maxA, 320);
+    else {
+      const lines = h => { let n = 1, x = 0; for (const a of ars) { const w = a * h; if (x > 0 && x + GX + w > W) { n++; x = w; } else x += (x > 0 ? GX : 0) + w; } return n; };
+      best = 40;
+      for (let n = 1; n <= ars.length; n++) {
+        const h = Math.min((H - (n - 1) * GY) / n - CAP, W / maxA);
+        if (h > best && lines(h) <= n) best = h;
+      }
+    }
+    el.style.setProperty('--h', Math.floor(best) + 'px');
+  }
+  const fitBooks = () => flat.forEach(ex => ex.book && fitBook(ex));
+
+  // ---- Scroll tracking ---------------------------------------------------
+  const exEls = flat.map(ex => $(ex.id));
+  let raf = 0;
+  function track() {
+    raf = 0;
+    const y = innerHeight * 0.4;
+    let cur = -1;
+    for (let i = 0; i < exEls.length && exEls[i].getBoundingClientRect().top <= y; i++) cur = i;
+    renderAside(cur);
+  }
+  addEventListener('scroll', () => { raf ||= requestAnimationFrame(track); }, { passive: true });
+  addEventListener('resize', () => { fitBooks(); track(); });
+  fitBooks();
+  track();
+
+  // ---- Clicks ------------------------------------------------------------
+  const exOf = el => flat[+el.closest('[data-fi]').dataset.fi];
+  document.addEventListener('click', e => {
+    const t = e.target;
+    let el;
+    if ((el = t.closest('[data-go]'))) exEls[+el.dataset.go].scrollIntoView();
+    else if ((el = t.closest('.pager [data-step]'))) setPage(exOf(el), exOf(el).page + +el.dataset.step);
+    else if ((el = t.closest('.pager [data-page]'))) setPage(exOf(el), +el.dataset.page);
+    else if ((el = t.closest('.thumb[data-v]'))) setBookVersion(exOf(el), +el.dataset.v);
+    else if ((el = t.closest('.thumb'))) setHero(exOf(el), +el.dataset.i);
+    else if ((el = t.closest('.page'))) { const ex = exOf(el); openLB(ex, ex.items.findIndex(it => it.i === +el.dataset.i)); }
+    else if ((el = t.closest('.hero'))) { const ex = exOf(el); openLB(ex, itemOf(ex)); }
+  });
+
+  const itemOf = ex => ex.items.findIndex(it => it.i === ex.hero && it.j === ex.page);
+  const redrawStage = ex => {
+    const el = exEls[ex.fi];
+    const focusPager = el.contains(document.activeElement) && document.activeElement.closest('.pager');
+    const sel = focusPager && (document.activeElement.dataset.step ? `[data-step="${document.activeElement.dataset.step}"]` : `[data-page="${ex.page}"]`);
+    el.querySelector('.stage').outerHTML = stageHTML(ex);
+    const again = sel && el.querySelector('.pager ' + sel);
+    if (again && !again.disabled) again.focus();
+  };
+
+  function setPage(ex, p) {
+    const n = ex.files[ex.hero].pages.length;
+    p = Math.max(0, Math.min(n - 1, p));
+    if (p === ex.page) return;
+    ex.page = p;
+    redrawStage(ex);
+  }
+
+  function setHero(ex, i, page = 0) {
+    if (ex.hero === i && page === ex.page) return openLB(ex, itemOf(ex));  // second click on the selected thumb opens it
+    ex.hero = i; ex.page = page;
+    redrawStage(ex);
+    exEls[ex.fi].querySelectorAll('.thumb').forEach((b, j) => b.setAttribute('aria-pressed', j === i));
+  }
+
+  function setBookVersion(ex, k) {
+    if (ex.bookV === k) return;
+    ex.bookV = k;
+    exEls[ex.fi].querySelector('.book').outerHTML = bookHTML(ex);
+    exEls[ex.fi].querySelectorAll('.thumb').forEach((b, j) => b.setAttribute('aria-pressed', j === k));
+    fitBook(ex);
+  }
+
+  // Scroll sideways (trackpad) or swipe on a PDF to turn its pages
+  let wheelLock = 0;
+  document.addEventListener('wheel', e => {
+    const hero = e.target.closest('.hero');
+    if (!hero || Math.abs(e.deltaX) < 20 || Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+    const ex = exOf(hero);
+    if (ex.files[ex.hero].pages.length < 2) return;
+    e.preventDefault();
+    if (Date.now() < wheelLock) return;
+    wheelLock = Date.now() + 450;
+    setPage(ex, ex.page + (e.deltaX > 0 ? 1 : -1));
+  }, { passive: false });
+  let hx = null;
+  document.addEventListener('touchstart', e => { hx = e.target.closest('.hero') ? e.touches[0].clientX : null; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (hx === null || !lb.hidden) return;
+    const dx = e.changedTouches[0].clientX - hx; hx = null;
+    const hero = e.target.closest('.hero');
+    if (hero && Math.abs(dx) > 50) { const ex = exOf(hero); setPage(ex, ex.page + (dx < 0 ? 1 : -1)); }
+  });
+
+  // ---- Lightbox ----------------------------------------------------------
+  const lb = $('lb');
+  let lbEx = null, lbI = 0, lbReturn = null;
+
+  function openLB(ex, i) {
+    lbEx = ex; lbReturn = document.activeElement;
+    lb.hidden = false;
+    document.documentElement.style.overflow = 'hidden';
+    showLB(Math.max(0, i));
+    $('lb-close').focus();
+  }
+  function closeLB() {
+    if (lb.hidden) return;
+    if (document.fullscreenElement) document.exitFullscreen();
+    lb.hidden = true;
+    $('lb-stage').innerHTML = '';
+    document.documentElement.style.overflow = '';
+    // leave the page showing what was looked at last
+    const it = lbEx.items[lbI];
+    if (!lbEx.book && (it.i !== lbEx.hero || it.j !== lbEx.page)) setHero(lbEx, it.i, it.j);
+    if (lbReturn && lbReturn.isConnected) lbReturn.focus();
+  }
+  function showLB(i) {
+    const items = lbEx.items;
+    lbI = (i + items.length) % items.length;
+    const it = items[lbI], f = it.f;
+    $('lb-title').textContent = `${lbEx.num} ${lbEx.title} — ${it.label}`;
+    $('lb-count').textContent = items.length > 1 ? `${lbI + 1} / ${items.length}` : '';
+    $('lb-open').href = url(f.src);
+    $('lb-stage').innerHTML =
+      (f.kind === 'video' ? `<video src="${url(f.src)}" controls autoplay playsinline></video>`
+        : `<img src="${url(f.pages[it.j].src)}" alt="${esc(lbEx.title)}, ${esc(it.label)}">`) +
+      (items.length > 1 ? `<button class="lb-nav lb-prev" type="button" aria-label="Zurück">←</button>
+                <button class="lb-nav lb-next" type="button" aria-label="Weiter">→</button>` : '');
+  }
+
+  lb.addEventListener('click', e => {
+    if (e.target.closest('.lb-prev')) showLB(lbI - 1);
+    else if (e.target.closest('.lb-next')) showLB(lbI + 1);
+    else if (e.target.closest('#lb-close') || e.target.id === 'lb-stage') closeLB();
+  });
+  $('lb-fs').addEventListener('click', toggleFS);
+  function toggleFS() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (lb.requestFullscreen) lb.requestFullscreen().catch(() => {});
+  }
+  document.addEventListener('keydown', e => {
+    if (lb.hidden) return;
+    if (e.key === 'Escape' && !document.fullscreenElement) closeLB();
+    else if (e.key === 'ArrowLeft') showLB(lbI - 1);
+    else if (e.key === 'ArrowRight') showLB(lbI + 1);
+    else if (e.key === 'f' || e.key === 'F') toggleFS();
+    else if (e.key === 'Tab') {  // keep focus inside the dialog
+      const f = [...lb.querySelectorAll('a[href], button')];
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  let x0 = null;
+  lb.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50 && lbEx.items.length > 1) showLB(lbI + (dx < 0 ? 1 : -1));
+  });
+})();
+</script>
+</body>
+</html>

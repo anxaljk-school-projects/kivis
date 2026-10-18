@@ -1,0 +1,4 @@
+Datum: 24.09.2026
+
+Das Experimentieren mit Farben hat mir viel Spass gemacht.
+Gelernt habe ich vor allem zwei Dinge: Farben mit demselben Helligkeitswert in InDesign wirken trotzdem nicht gleich hell, weil die wahrgenommene Helligkeit auch vom Farbton abhängt. Und dieselbe Farbe wirkt je nach Hintergrund ganz anders (Simultankontrast). Besonders stark ist dieser Effekt bei Komplementärfarben.
