@@ -75,10 +75,6 @@ a { color: inherit; }
   object-fit: contain; object-position: left top;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .14));
 }
-.badge {
-  position: absolute; left: 8px; top: 8px;
-  font-size: 11px; padding: 2px 6px; background: var(--ink); color: var(--paper);
-}
 .empty {
   flex: 1; min-height: 0; max-width: 560px; max-height: 420px;
   background: var(--hatch);
@@ -220,7 +216,6 @@ aside {
   .lb-stage { padding: 0 0 16px; }
   .lb-nav { top: auto; bottom: 8px; transform: none; background: rgba(17, 17, 17, .7); }
   .lb-bar { gap: 16px; padding: 12px 16px; flex-wrap: wrap; }
-  .lb-fs { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
@@ -237,7 +232,6 @@ aside {
     <div class="lb-title" id="lb-title"></div>
     <div class="lb-count" id="lb-count"></div>
     <a id="lb-open" target="_blank" rel="noopener">Original ↗</a>
-    <button class="lb-fs" id="lb-fs" type="button">Vollbild</button>
     <button id="lb-close" type="button">Schliessen ✕</button>
   </div>
   <div class="lb-stage" id="lb-stage"></div>
@@ -310,7 +304,6 @@ aside {
     ${ex.learn && (!inline || ex.inlineLearn) ? `<div class="learn"><h3>What I’ve learnt</h3>
       ${ex.learn.split('\n').map(l => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`;
 
-  const pdfNote = f => f.kind !== 'pdf' ? '' : f.pages.length > 1 ? `PDF · ${f.pages.length} Seiten` : 'PDF';
 
   function stageHTML(ex) {
     const f = ex.files[ex.hero];
@@ -320,7 +313,7 @@ aside {
     return `<div class="stage">
       <div class="hero-wrap" style="--ar: ${(w / h).toFixed(4)}">
         <button class="hero" type="button" data-fi="${ex.fi}" aria-label="${heroLabel(ex)}">
-          ${media(f, f.pages[p])}${f.kind === 'pdf' ? `<span class="badge">${pdfNote(f)}</span>` : ''}</button>
+          ${media(f, f.pages[p])}</button>
         ${n < 2 ? '' : `<div class="hero-nav" data-fi="${ex.fi}">
           <button class="hero-arrow" type="button" data-step="-1" aria-label="Vorherige Seite" ${p === 0 ? 'hidden' : ''}>←</button>
           <button class="hero-arrow" type="button" data-step="1" aria-label="Nächste Seite" ${p === n - 1 ? 'hidden' : ''}>→</button>
@@ -531,7 +524,6 @@ aside {
   }
   function closeLB() {
     if (lb.hidden) return;
-    if (document.fullscreenElement) document.exitFullscreen();
     lb.hidden = true;
     $('lb-stage').innerHTML = '';
     document.documentElement.style.overflow = '';
@@ -559,17 +551,11 @@ aside {
     else if (e.target.closest('.lb-next')) showLB(lbI + 1);
     else if (e.target.closest('#lb-close') || e.target.id === 'lb-stage') closeLB();
   });
-  $('lb-fs').addEventListener('click', toggleFS);
-  function toggleFS() {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (lb.requestFullscreen) lb.requestFullscreen().catch(() => {});
-  }
   document.addEventListener('keydown', e => {
     if (lb.hidden) return;
-    if (e.key === 'Escape' && !document.fullscreenElement) closeLB();
+    if (e.key === 'Escape') closeLB();
     else if (e.key === 'ArrowLeft') showLB(lbI - 1);
     else if (e.key === 'ArrowRight') showLB(lbI + 1);
-    else if (e.key === 'f' || e.key === 'F') toggleFS();
     else if (e.key === 'Tab') {  // keep focus inside the dialog
       const f = [...lb.querySelectorAll('a[href], button')];
       const first = f[0], last = f[f.length - 1];
