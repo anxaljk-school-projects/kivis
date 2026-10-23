@@ -89,6 +89,11 @@ def pretty(name):
 def version(stem):
     """Return (sort key, version key, label, booklet pages or None) for a file stem."""
     m = re.match(r"^(final|v(\d+))(?:[_\- ]+(.*))?$", stem, re.I)
+    t = re.match(r"^(.+?)[_\- ]+(final|v(\d+))$", stem, re.I)  # version at the end: "o-o-e-v1"
+    if not m and t:
+        key = "v" + t.group(3) if t.group(3) else "final"
+        rank = (0, int(t.group(3))) if t.group(3) else (2, 0)
+        return rank + (natural(t.group(1)),), key, ("V" + t.group(3) if t.group(3) else "Final") + " · " + t.group(1), None
     if not m:
         label = pretty(stem.replace("-", " "))
         return (1, 0, natural(stem)), stem.lower(), label[:1].upper() + label[1:], None
