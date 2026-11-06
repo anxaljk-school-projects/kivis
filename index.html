@@ -301,7 +301,7 @@ aside {
   const infoHTML = (ex, inline) => `
     <h3 class="title">${esc(ex.title)}</h3>
     ${ex.date ? `<dl class="meta"><dt>Datum</dt><dd>${esc(ex.date)}</dd></dl>` : ''}
-    ${ex.learn && (!inline || ex.inlineLearn) ? `<div class="learn"><h3>What I’ve learnt</h3>
+    ${ex.learn && (!inline || ex.inlineLearn) ? `<div class="learn"><h3>Mein Kommentar</h3>
       ${ex.learn.split('\n').map(l => `<p>${esc(l)}</p>`).join('')}</div>` : ''}`;
 
 
